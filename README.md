@@ -1,4 +1,4 @@
 Deferred
 ========
 
-a simple Deferred/Promise sample.
+A simple JavaScript Deferred/Promise sample.
