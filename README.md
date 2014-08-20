@@ -25,9 +25,7 @@ fn().progress(function(step){
 }).done(function(message){
 	console.debug('done', message);
 });
-```
 
-```
 function ajax() {
 	var deferred = new Deferred();
 	var xmlhttp;
@@ -57,6 +55,7 @@ ajax().done(function(data){
 });
 ```
 
+**when**
 ```
 var p = Deferred.when(fn().progress(function(step) {
 	console.debug(step);
