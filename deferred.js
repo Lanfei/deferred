@@ -37,14 +37,16 @@
 					}
 					if (tuple[2]) {
 						state = tuple[2];
+						callbacks = null;
 					}
 					argsCache = arguments;
 				};
 				promise[tuple[1]] = function(fn) {
 					if (state == tuple[2]) {
 						fn.apply(promise, argsCache);
+					}else{
+						callbacks.push(fn);
 					}
-					callbacks.push(fn);
 					return promise;
 				};
 			})(tuples[i]);
