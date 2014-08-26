@@ -36,7 +36,7 @@
 	}
 
 	// Sample1
-	p = countdown().progress(function(step) {
+	countdown().progress(function(step) {
 		console.debug('countdown', step);
 	}).done(function(){
 		console.debug('countdown done');
