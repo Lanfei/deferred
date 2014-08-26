@@ -1,5 +1,5 @@
 (function() {
-	Deferred = function() {
+	Deferred = function(fn) {
 		var state = 'pending',
 			tuples = [
 				['resolve', 'done', 'resolved'],
@@ -8,12 +8,12 @@
 			],
 			promise = {
 				always: function(fn) {
-					deferred.done(fn).fail(fn);
+					promise.done(fn).fail(fn);
 				},
 				then: function(fnDone, fnFail, fnProgress) {
-					deferred.done(fnDone);
-					deferred.fail(fnFail);
-					deferred.progress(fnProgress);
+					promise.done(fnDone);
+					promise.fail(fnFail);
+					promise.progress(fnProgress);
 				},
 				state: function() {
 					return state;
@@ -49,19 +49,22 @@
 				};
 			})(tuples[i]);
 		}
+		if (fn) {
+			return fn(deferred);
+		}
 		return deferred;
 	};
 
 	Deferred.when = function(promise /* , ..., promiseN */ ) {
-		var deferred = new Deferred(),
+		var deferred = Deferred(),
 			length = arguments.length,
 			remaining = length;
 
-		if (length == 1) {
-			return promise;
-		}
 		for (var i = 0; i < length; ++i) {
 			promise = arguments[i];
+			if (typeof promise === 'function') {
+				promise = promise(Deferred());
+			}
 			promise.done(function() {
 				if (--remaining == 0) {
 					deferred.resolve();

@@ -1,11 +1,11 @@
 (function() {
 
-	function fn() {
-		var i = 0;
+	function countdown() {
+		var i = 5;
 		var deferred = new Deferred();
 		var timer = setInterval(function() {
-			deferred.notify(++i);
-			if (i == 5) {
+			deferred.notify(i);
+			if (i-- === 0) {
 				deferred.resolve('Hi');
 				clearInterval(timer);
 			}
@@ -21,7 +21,7 @@
 		} else {
 			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
 		}
-		xmlhttp.open('get', 'index.html', true);
+		xmlhttp.open('get', 'deferred.js', true);
 		xmlhttp.onreadystatechange = function() {
 			if (xmlhttp.readyState == 4) {
 				if (xmlhttp.status == 200) {
@@ -35,15 +35,25 @@
 		return deferred.promise();
 	}
 
-	var p = Deferred.when(fn().progress(function(step) {
-		console.debug(step);
-	}), ajax()).done(function() {
-		console.debug('done');
-	}).done(function() {
-		console.debug(this, arguments);
-	}).fail(function() {
-		console.debug('fail');
-	}).fail(function() {
-		console.debug(this, arguments);
+	// Sample1
+	countdown().progress(function(step) {
+		console.debug('countdown', step);
+	}).done(function(){
+		console.debug('countdown done');
 	});
+
+	// Sample2
+	ajax().then(function() {
+		console.debug('ajax done');
+	}, function() {
+		console.debug('ajax fail');
+	});
+
+	// Sample3
+	Deferred.when(countdown(), ajax()).done(function() {
+		console.debug('when done');
+	}).fail(function() {
+		console.debug('when fail');
+	});
+
 })();
