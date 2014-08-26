@@ -10,7 +10,7 @@
 			}
 		}, 300);
 		return deferred.promise();
-	};
+	}
 
 	function ajax(deferred) {
 		var xmlhttp;

@@ -11,7 +11,7 @@
 			}
 		}, 300);
 		return deferred.promise();
-	};
+	}
 
 	function ajax() {
 		var deferred = new Deferred();
