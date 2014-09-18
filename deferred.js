@@ -1,19 +1,62 @@
 (function() {
+
+	var each = function(obj, iterator) {
+		for (var key in obj) {
+			iterator(obj[key], key);
+		}
+	};
+
 	Deferred = function(fn) {
 		var state = 'pending',
-			tuples = [
-				['resolve', 'done', 'resolved'],
-				['reject', 'fail', 'rejected'],
-				['notify', 'progress']
-			],
+			events = {
+				done: {
+					emiter: 'resolve',
+					state: 'resolved',
+					callbacks: [],
+					args: null
+				},
+				fail: {
+					emiter: 'reject',
+					state: 'rejected',
+					callbacks: [],
+					args: null
+				},
+				progress: {
+					emiter: 'notify',
+					state: 'pending',
+					callbacks: []
+				}
+			},
 			promise = {
-				always: function(fn) {
+				always: function() {
 					promise.done(fn).fail(fn);
 				},
 				then: function(fnDone, fnFail, fnProgress) {
-					promise.done(fnDone);
-					promise.fail(fnFail);
-					promise.progress(fnProgress);
+					var i = 0;
+					var args = arguments;
+					var filtered = Deferred();
+					each(events, function(item, name) {
+						var fn = args[i++];
+						promise[name](function() {
+							if (fn) {
+								filtered[item.emiter](fn.apply(promise, arguments));
+							} else {
+								filtered[item.emiter].apply(null, arguments);
+							}
+						});
+					});
+					return filtered.promise();
+				},
+				pipe: function(fn){
+					var deferred = Deferred();
+					promise.done(function(){
+						var promise = fn.apply(null, arguments);
+						if (typeof promise === 'function') {
+							promise = promise(Deferred());
+						}
+						promise.done(deferred.resolve).fail(deferred.reject).progress(deferred.notify);
+					});
+					return deferred.promise();
 				},
 				state: function() {
 					return state;
@@ -24,35 +67,33 @@
 					return promise;
 				}
 			};
-		for (var i = 0; i < 3; ++i) {
-			(function(tuple) {
-				var callbacks = [];
-				var argsCache;
-				deferred[tuple[0]] = function() {
-					if (state != 'pending') {
-						return;
-					}
-					for (var i = 0, l = callbacks.length; i < l; ++i) {
-						callbacks[i].apply(promise, arguments);
-					}
-					if (tuple[2]) {
-						state = tuple[2];
-						callbacks = null;
-					}
-					argsCache = arguments;
-				};
-				promise[tuple[1]] = function(fn) {
-					if (state == tuple[2]) {
-						fn.apply(promise, argsCache);
-					}else{
-						callbacks.push(fn);
-					}
-					return promise;
-				};
-			})(tuples[i]);
-		}
+
+		each(events, function(item, name) {
+			var callbacks = item.callbacks;
+			promise[name] = function(fn) {
+				if (state !== 'pending' && state === item.state) {
+					fn.apply(promise, item.args);
+				} else if (fn) {
+					callbacks.push(fn);
+				}
+				return promise;
+			};
+			deferred[item.emiter] = function() {
+				if (state !== 'pending') {
+					return;
+				}
+				for (var i = 0, l = callbacks.length; i < l; ++i) {
+					callbacks[i].apply(promise, arguments);
+				}
+				state = item.state;
+				item.args = arguments;
+				if (state !== 'pending') {
+					item.callbacks = null;
+				}
+			};
+		});
 		if (fn) {
-			return fn(deferred);
+			return fn.call(deferred, deferred);
 		}
 		return deferred;
 	};
@@ -68,7 +109,7 @@
 				promise = promise(Deferred());
 			}
 			promise.done(function() {
-				if (--remaining == 0) {
+				if (--remaining === 0) {
 					deferred.resolve();
 				}
 			});

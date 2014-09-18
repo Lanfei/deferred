@@ -38,7 +38,7 @@
 	// Sample1
 	countdown().progress(function(step) {
 		console.debug('countdown', step);
-	}).done(function(){
+	}).done(function() {
 		console.debug('countdown done');
 	});
 
