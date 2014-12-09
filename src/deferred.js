@@ -1,4 +1,11 @@
-(function() {
+/**
+ * GoDeferred 1.2.0
+ * https://github.com/Lanfei/GoDeferred
+ * (c) 2014 [Lanfei](http://www.clanfei.com/)
+ * A simple Deferred/Promise implementation
+ */
+
+(function(global) {
 
 	var each = function(obj, iterator) {
 		for (var key in obj) {
@@ -6,7 +13,7 @@
 		}
 	};
 
-	Deferred = function(fn) {
+	var Deferred = function(fn) {
 		var state = 'pending',
 			events = {
 				done: {
@@ -47,9 +54,9 @@
 					});
 					return filtered.promise();
 				},
-				pipe: function(fn){
+				pipe: function(fn) {
 					var deferred = Deferred();
-					promise.done(function(){
+					promise.done(function() {
 						var promise = fn.apply(null, arguments);
 						if (typeof promise === 'function') {
 							promise = promise(Deferred());
@@ -120,4 +127,22 @@
 		return deferred.promise();
 	};
 
-})();
+	Deferred.version = '1.2.0';
+
+	if (typeof define === "function") {
+		if (define.cmd) {
+			define(function() {
+				return Deferred;
+			});
+		} else if (define.amd) {
+			define("deferred", [], function() {
+				return Deferred;
+			});
+		}
+	} else if (typeof module === 'object' && typeof module.exports === 'object') {
+		module.exports = Deferred;
+	} else {
+		global.Deferred = Deferred;
+	}
+
+})(this);
