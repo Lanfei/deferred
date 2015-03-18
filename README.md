@@ -6,7 +6,7 @@ A simple JavaScript Deferred/Promise sample.
 Usage 1
 -------------
 
-```
+```js
 function countdown() {
 	var i = 5;
 	var deferred = new Deferred();
@@ -66,7 +66,8 @@ Deferred.when(countdown(), ajax()).done(function() {
 
 Usage 2
 -------------
-```
+
+```js
 function countdown(deferred) {
 	var i = 5;
 	var timer = setInterval(function() {
