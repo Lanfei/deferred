@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Use Deferred in Browser</title>
+</head>
+<body>
+<script src="../src/deferred.js"></script>
+<script>
+	(function () {
+
+		// Sample 1
+		// Declare the deferred instance by yourself.
+		function countdown() {
+			var deferred = new Deferred();
+			var i = 5;
+			var timer = setInterval(function () {
+				deferred.notify(i);
+				if (i-- === 0) {
+					deferred.resolve('Hi');
+					clearInterval(timer);
+				}
+			}, 300);
+			return deferred.promise();
+		}
+
+		// Usage 1
+		countdown().progress(function (step) {
+			console.log('countdown', step);
+		}).done(function () {
+			console.log('countdown done');
+		});
+
+
+		// Sample 2
+		// Use `Deferred(fn)` and get the deferred instance with `this` context
+		function ajax() {
+			var xmlHttp;
+			if (window.XMLHttpRequest) {
+				xmlHttp = new XMLHttpRequest();
+			} else {
+				xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+			}
+			xmlHttp.open('get', 'deferred.js', true);
+			xmlHttp.onreadystatechange = function () {
+				if (xmlHttp.readyState == 4) {
+					if (xmlHttp.status == 200) {
+						this.resolve(xmlHttp.responseText);
+					} else {
+						this.reject(xmlHttp.status);
+					}
+				}
+			};
+			xmlHttp.onerror = this.reject;
+			try {
+				xmlHttp.send();
+			} catch (e) {
+				this.reject(e);
+			}
+		}
+
+		// Usage 2
+		Deferred(ajax).then(function () {
+			console.log('ajax done');
+		}, function () {
+			console.log('ajax fail');
+		});
+
+	})();
+</script>
+</body>
+</html>

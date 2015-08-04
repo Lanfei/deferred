@@ -1,83 +1,94 @@
 /**
- * GoDeferred 1.2.0
- * https://github.com/Lanfei/GoDeferred
+ * Go Deferred 2.0.0
+ * https://github.com/Lanfei/deferred
  * (c) 2014 [Lanfei](http://www.clanfei.com/)
- * A simple Deferred/Promise implementation
+ * A lightweight implementation of Deferred/Promise.
  */
 
-(function(global) {
+(function (global) {
 
-	var each = function(obj, iterator) {
-		for (var key in obj) {
-			iterator(obj[key], key);
+	Deferred.version = '2.0.0';
+
+	function each(obj, iterator) {
+		var i, l, key;
+		var typeStr = Object.prototype.toString.call(obj);
+		if (typeStr === '[object Array]' || typeStr === '[object Arguments]') {
+			for (i = 0, l = obj.length; i < l; ++i) {
+				iterator(obj[i], i);
+			}
+		} else if (Object.keys) {
+			var keys = Object.keys(obj);
+			for (i = 0, l = keys.length; i < l; ++i) {
+				key = keys[i];
+				iterator(obj[key], key);
+			}
+		} else {
+			for (key in obj) {
+				iterator(obj[key], key);
+			}
 		}
-	};
+	}
 
-	var Deferred = function(fn) {
-		var state = 'pending',
-			events = {
-				done: {
-					emiter: 'resolve',
-					state: 'resolved',
-					callbacks: [],
-					args: null
-				},
-				fail: {
-					emiter: 'reject',
-					state: 'rejected',
-					callbacks: [],
-					args: null
-				},
-				progress: {
-					emiter: 'notify',
-					state: 'pending',
-					callbacks: []
-				}
+	function Deferred(fn) {
+		var state = 'pending';
+		var events = {
+			done: {
+				emitter: 'resolve',
+				state: 'resolved',
+				callbacks: [],
+				args: null
 			},
-			promise = {
-				always: function() {
-					promise.done(fn).fail(fn);
-				},
-				then: function(fnDone, fnFail, fnProgress) {
-					var i = 0;
-					var args = arguments;
-					var filtered = Deferred();
-					each(events, function(item, name) {
-						var fn = args[i++];
-						promise[name](function() {
-							if (fn) {
-								filtered[item.emiter](fn.apply(promise, arguments));
-							} else {
-								filtered[item.emiter].apply(null, arguments);
+			fail: {
+				emitter: 'reject',
+				state: 'rejected',
+				callbacks: [],
+				args: null
+			},
+			progress: {
+				emitter: 'notify',
+				state: 'pending',
+				callbacks: []
+			}
+		};
+		var promise = {
+			always: function (fnAlways) {
+				return this.done(fnAlways).fail(fnAlways);
+			},
+			then: function (fnDone, fnFail, fnProgress) {
+				return this.done(fnDone).fail(fnFail).progress(fnProgress);
+			},
+			pipe: function (doneFilter, failFilter, progressFilter) {
+				var i = 0;
+				var args = arguments;
+				var filtered = Deferred();
+				each(events, function (event, name) {
+					var filter = args[i++];
+					promise[name](function () {
+						if (filter) {
+							var result = filter.apply(promise, arguments);
+							if (result !== undefined && result !== null) {
+								filtered[event.emitter](result);
 							}
-						});
-					});
-					return filtered.promise();
-				},
-				pipe: function(fn) {
-					var deferred = Deferred();
-					promise.done(function() {
-						var promise = fn.apply(null, arguments);
-						if (typeof promise === 'function') {
-							promise = promise(Deferred());
+						} else {
+							filtered[event.emitter].apply(null, arguments);
 						}
-						promise.done(deferred.resolve).fail(deferred.reject).progress(deferred.notify);
 					});
-					return deferred.promise();
-				},
-				state: function() {
-					return state;
-				}
+				});
+				return filtered.promise();
 			},
-			deferred = {
-				promise: function() {
-					return promise;
-				}
-			};
+			state: function () {
+				return state;
+			}
+		};
+		var deferred = {
+			promise: function () {
+				return promise;
+			}
+		};
 
-		each(events, function(item, name) {
+		each(events, function (item, name) {
 			var callbacks = item.callbacks;
-			promise[name] = function(fn) {
+			promise[name] = function (fn) {
 				if (state !== 'pending' && state === item.state) {
 					fn.apply(promise, item.args);
 				} else if (fn) {
@@ -85,7 +96,7 @@
 				}
 				return promise;
 			};
-			deferred[item.emiter] = function() {
+			deferred[item.emitter] = function () {
 				if (state !== 'pending') {
 					return;
 				}
@@ -99,43 +110,73 @@
 				}
 			};
 		});
+
 		if (fn) {
-			return fn.call(deferred, deferred);
+			var args = Array.prototype.slice.call(arguments, 1);
+			fn.apply(deferred, args);
+			return deferred.promise();
 		}
 		return deferred;
-	};
+	}
 
-	Deferred.when = function(promise /* , ..., promiseN */ ) {
-		var deferred = Deferred(),
+	Deferred.when = function (promise /* , ..., promiseN */) {
+		var args = [],
+			deferred = Deferred(),
 			length = arguments.length,
 			remaining = length;
 
-		for (var i = 0; i < length; ++i) {
-			promise = arguments[i];
+		each(arguments, function (promise, i) {
 			if (typeof promise === 'function') {
 				promise = promise(Deferred());
 			}
-			promise.done(function() {
+			promise.done(function () {
+				args[i] = arguments;
 				if (--remaining === 0) {
-					deferred.resolve();
+					deferred.resolve.apply(null, args);
 				}
 			});
-			promise.fail(function() {
-				deferred.reject();
+			promise.fail(function () {
+				deferred.reject.apply(null, arguments);
 			});
-		}
+		});
 		return deferred.promise();
 	};
 
-	Deferred.version = '1.2.0';
+	Deferred.promisify = function (fn, withError) {
+		return function () {
+			var deferred = new Deferred();
+			var args = Array.prototype.slice.call(arguments);
+			withError = withError !== false;
+			args.push(function (err) {
+				if (withError && err) {
+					deferred.reject(err);
+				} else {
+					var args = Array.prototype.slice.call(arguments, withError ? 1 : 0);
+					deferred.resolve.apply(null, args);
+				}
+			});
+			fn.apply(this, args);
+			return deferred.promise();
+		};
+	};
+
+	Deferred.fromStream = function (stream) {
+		var deferred = new Deferred();
+		stream.on('data', deferred.notify);
+		stream.on('end', deferred.resolve);
+		stream.on('error', deferred.reject);
+		return deferred.promise();
+	};
+
+	Deferred.Deferred = Deferred;
 
 	if (typeof define === "function") {
 		if (define.cmd) {
-			define(function() {
+			define(function () {
 				return Deferred;
 			});
 		} else if (define.amd) {
-			define("deferred", [], function() {
+			define("deferred", [], function () {
 				return Deferred;
 			});
 		}

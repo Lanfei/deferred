@@ -1,26 +1,5 @@
-# Deferred
+var Deferred = require('..');
 
-A lightweight implementation of Deferred/Promise.
-
-[![NPM](https://nodei.co/npm/deferred-lib.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/deferred-lib/)
-
-## Installation
-
-### Node
-
-```bash
-$ npm install deferred-lib
-```
-
-### Browser
-
-```html
-<script src="js/deferred.min.js"></script>
-```
-
-## Usage
-
-```js
 // Usage 1
 // Declare the deferred instance and use it.
 function countdown1() {
@@ -62,6 +41,3 @@ Deferred(countdown2).progress(function (step) {
 }).done(function () {
 	console.log('countdown2 done');
 });
-```
-
-**See `examples` directory for more usages.**

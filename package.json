@@ -1,11 +1,32 @@
 {
-	"name": "GoTpl",
-	"version": "1.1.0",
-	"author": "Lanfei<CooLanfei@163.com>",
-	"description": "A single template engine with cache mechanism",
-	"homepage": "https://github.com/Lanfei/GoTpl",
-	"dependencies": {
-		"grunt": "~0.4.2",
-		"grunt-contrib-uglify": "~0.6.0"
-	}
+  "name": "deferred-lib",
+  "version": "2.0.0",
+  "description": "A lightweight implementation of Deferred/Promise.",
+  "main": "index.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Lanfei/deferred.git"
+  },
+  "keywords": [
+    "deferred",
+    "promise",
+    "when",
+    "then"
+  ],
+  "author": "Lanfei",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Lanfei/deferred/issues"
+  },
+  "homepage": "https://github.com/Lanfei/deferred#readme",
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-uglify": "^0.9.1"
+  }
 }
