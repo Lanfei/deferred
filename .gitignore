@@ -1,2 +1,4 @@
+*.sh
+*.bat
 .idea
 node_modules
