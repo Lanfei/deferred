@@ -1,5 +1,5 @@
 /**
- * Go Deferred 2.0.0
+ * Go Deferred 2.0.1
  * https://github.com/Lanfei/deferred
  * (c) 2014 [Lanfei](http://www.clanfei.com/)
  * A lightweight implementation of Deferred/Promise.
@@ -7,7 +7,7 @@
 
 (function (global) {
 
-	Deferred.version = '2.0.0';
+	Deferred.version = '2.0.1';
 
 	function each(obj, iterator) {
 		var i, l, key;

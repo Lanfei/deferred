@@ -1,6 +1,6 @@
 {
   "name": "deferred-lib",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A lightweight implementation of Deferred/Promise.",
   "main": "index.js",
   "directories": {
