@@ -2,7 +2,7 @@
 
 A lightweight implementation of Deferred/Promise.
 
-[![NPM](https://nodei.co/npm/deferred-lib.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/deferred-lib/)
+[![NPM](https://nodei.co/npm/deferred-lib.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/deferred-lib)
 
 ## Installation
 
